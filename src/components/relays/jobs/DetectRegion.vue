@@ -41,8 +41,6 @@ export default defineComponent({
   },
   beforeMount(){
     this.lastUpdate = this.store.jobs.getLastUpdate(this.slug)
-    this.untilNext = this.timeUntilRefresh()
-    this.sinceLast = this.timeSinceRefresh()
   },
   mounted(){
     //console.log('is processing', this.store.jobs.isJobActive(this.slug))
@@ -74,6 +72,7 @@ export default defineComponent({
           catch(e) { //brave 
             this.store.prefs.clientSideProcessing = true
             this.store.prefs.disableGeoDetection = true
+            this.store.prefs.runtimeGeo = false
             location.reload() 
           }
         },
@@ -90,12 +89,6 @@ export default defineComponent({
       if(!this.store.jobs.isJobActive(this.slug) && !this.isSingle)
         this.CheckRegion()
     }, 1000)
-  },
-  timeUntilRefresh(){
-    return this.timeSince(Date.now()-(this.store.jobs.getLastUpdate(this.slug)+this.store.prefs.duration-Date.now())) 
-  },
-  timeSinceRefresh(){
-    return this.timeSince(this.store.jobs.getLastUpdate(this.slug)) || Date.now()
   },
 }, RelayMethods),
   props: {},

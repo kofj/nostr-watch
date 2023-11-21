@@ -2,17 +2,19 @@
 
 Follow me: npub1uac67zc9er54ln0kl6e4qp2y6ta3enfcg7ywnayshvlw9r5w6ehsqq99rx
 
-LN & NIP-05: bread@sandwich.farm 
+LN & NIP-05: bread@sandwich.farm  
 
-# nostr-watch 0.1
+# nostr-watch 0.2
 
-A client-side nostr network status built with Vue3, Pinia, [nostr-tools](https://github.com/fiatjaf/nostr-tools), [nostr-js](https://github.com/jb55/nostr-js) and [nostr-relay-inspector](https://github.com/dskvr/nostr-relay-inspector). Originally forked from [fiatjaf/nostr-relay-registry](http://github.com/fiatjaf/nostr-relay-registry) but ended up being a rewrite.
+A client-side nostr network status built with Vue3, Pinia, [nostr-tools](https://github.com/fiatjaf/nostr-tools), [nostr-js](https://github.com/jb55/nostr-js) and [nostrwatch-js](https://github.com/dskvr/nostrwatch-js). Originally forked from [fiatjaf/nostr-relay-registry](http://github.com/fiatjaf/nostr-relay-registry) but ended up being a rewrite.
 
 nostr.watch aggregates data on nostr relays and the network in general to assist users, developers and relay operators. 
 
 Develop branch is deployed to https://next.nostr.watch
 
 ## Relay Additions 
+It is now suggested to add relays simply by using them and publishing your kind 3 to really any known relay in good health. Most of the relays are discovered at runtime. This change is not yet communicated in production. 
+
 Relay additions via Github as the primary method of adding relays will be phased out for a number of reasons, expect this change with the `0.2` release.
 
 If you are adding a relay, you need to use `main` as your base and submit your pr into `main`. Submissions to `develop` will still be approved, but your relay will not go online until a release. Whereas a PR into `main` will go live within 10 minutes of being merged. 
@@ -27,15 +29,22 @@ PRs into `develop` will not recieve any notification about this requirement.
 - [x] Detailed Relay View
 - [x] Relay Behavior Analysis
 - [x] NIP Checks
-- [x] Geo Checks (build-time)
+- [x] Geo Checks
 - [x] Favorite Relays 
 - [x] Extension Support 
 - [x] Nostr signing, individualized relay testing 
 - [ ] Lighting Tips to Relay Operators
 - [x] Relay Statistics 
 - [ ] Relay Historical Data (partially implemented)
-- [ ] Discover relays at runtime (currently buildtime, ready to move to runtime at 0.3) 
-- [ ] Discover geo at runtime
+- [x] Discover relays at runtime
+- [x] Discover geo at runtime
+- [ ] Relay Operator notes on Relay Pages 
+- [ ] Result sharing
+- [ ] Login, Dashboard and Account Settings
+- [ ] Goal Optimized UX and GUI
+- [ ] Portable Relay Detail Page
+- [ ] Relay Alerts Service
+
 
 ## Project setup
 ```
@@ -69,3 +78,9 @@ yarn lint
 ```
 yarn docker:build
 ```
+
+## Contributors
+
+<a align="center" href="https://github.com/dskvr/nostr-watch/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=dskvr/nostr-watch" />
+</a>

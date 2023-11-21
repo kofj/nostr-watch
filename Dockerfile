@@ -4,11 +4,9 @@ WORKDIR /app
 
 COPY . /app/
 
-RUN yarn && yarn build
+RUN yarn
 
-RUN yarn global add yaml-convert
-
-RUN yaml-convert relays.yaml > dist/relays.json
+RUN yarn build
 
 FROM nginx:stable-alpine as nginx-nostr-relay-registry
 

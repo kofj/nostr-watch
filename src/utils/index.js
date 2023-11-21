@@ -51,12 +51,20 @@ export const getClosest = function(visitorGeo){
   return distances[0].region
 }
 
+export const getPrebuiltGeo = async function(){
+  const response = await fetch('/geo.json', { headers: { 'accept': 'application/dns-json' } })
+                        .catch(err => console.error('getPrebuiltGeo()', err))
+  const json = response.json()
+  return json
+}
+
+
 export const getGeo = async function(relay){
-  let dns, ip, geo
+  let dns, ip, geo, error
   //console.log('ip-api key', process.env.VUE_APP_IP_API_KEY)
   dns = await getDnsFromRelay(relay).catch()
   ip = await getIPFromDNS(dns).catch()
-  geo = await getGeoFromIP(ip).catch()
+  geo = await getGeoFromIP(ip).catch( () => error = true )
 
   if(geo)
     geo = Object.assign(geo, getContinentFromCountryCode(geo.countryCode))
@@ -67,7 +75,8 @@ export const getGeo = async function(relay){
   }
   if(!geo)
     console.warn(`no geo result for: ${relay}`)
-
+  if(error)
+    throw Error('Geo IP API is blocked')
   return geo
 }
 
@@ -78,7 +87,7 @@ export const getVisitorGeo = async function() {
   await fetch(url, { headers: { 'accept': 'application/dns-json' } })
           .then(response => response.json())
           .then((data) => { geo = data })
-          .catch(err => console.error('./scripts/geo.js', err))
+          .catch(err => console.error('getVisitorGeo()', err))
   return geo;
 }
 
@@ -107,7 +116,7 @@ export const getGeoFromIP = async function(ip){
   await fetch(url, { headers: { 'accept': 'application/dns-json' } })
           .then(response => response.json())
           .then((data) => { geo = data })
-          .catch(err => console.error('./scripts/geo.js', err))
+          .catch(() => { throw Error("geo IP API is being blocked") } )
   return geo;
 }
 
@@ -117,14 +126,14 @@ export const getDnsFromRelay = async function(relay){
   await fetch(`https://1.1.1.1/dns-query?name=${query}`, { headers: { 'accept': 'application/dns-json' } })
     .then(response => response.json())
     .then((data) => { dns = data.Answer ? data.Answer : false })
-    .catch(err => console.error('./scripts/geo.js', err))
+    .catch(err => console.error('getDnsFromRelay()', err))
   return dns
 }
 
 export const subscribeKind3 = async function(pubkey, relays){
   return new Promise( resolve => {
     const pool = new RelayPool(relays, { reconnect: true }),
-          subid = crypto.randomBytes(40).toString('hex'),
+          subid = crypto.randomBytes(20).toString('hex'),
           ordered = [],
           total = relays.length
 

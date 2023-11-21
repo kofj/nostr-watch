@@ -28,7 +28,7 @@
             </p>
         </div>
         <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-          <NostrSync />
+          <!-- <NostrSync /> -->
           <button 
             v-if="!store.layout.editorExpanded"
             @click="$router.push('/relays/add')" 
@@ -68,19 +68,16 @@ import SharedComputed from '@/shared/computed.js'
 import { parseHash } from '@/shared/hash-router.js'
 //data
 import { relays } from '../../../../relays.yaml'
-import { geo } from '../../../../cache/geo.yaml'
+// import { geo } from '../../../../cache/geo.yaml'
 
 //async components
-// const JobQueue = defineAsyncComponent(() =>
-//     import("@/components/relays/jobs/JobQueue.vue" /* webpackChunkName: "JobQueue" */)
-// );
 const FiltersPartial = defineAsyncComponent(() =>
     import("@/components/partials/FiltersPartial.vue" /* webpackChunkName: "FiltersPartial" */)
 );
 
-const NostrSync = defineAsyncComponent(() =>
-    import("@/components/relays/partials/NostrSync.vue" /* webpackChunkName: "NostrSync" */)
-);
+// const NostrSync = defineAsyncComponent(() =>
+//     import("@/components/relays/partials/NostrSync.vue" /* webpackChunkName: "NostrSync" */)
+// );
 
 const MapSummary = defineAsyncComponent(() =>
     import("@/components/relays/blocks/MapSummary.vue" /* webpackChunkName: "MapSummary" */)
@@ -108,7 +105,7 @@ export default defineComponent({
     RelaysFindNav,
     MapSummary,
     RelaysResultTable,
-    NostrSync,
+    // NostrSync,
     FiltersPartial,
     // JobQueue
   },
@@ -127,7 +124,7 @@ export default defineComponent({
   data() {
     return {
       relays: relays,
-      geo: this.store.relays.geo,
+      // geo: this.store.relays.geo,
       timeouts: {},
       intervals: {},
       relaysCount: {},
@@ -152,8 +149,8 @@ export default defineComponent({
     // this.routeSection = this.parseHash.section || false
     this.routeSubsection = this.parseHash.subsection || false
     
-    if(!process.env.VUE_APP_IP_API_KEY)
-      this.store.relays.setGeo(geo)
+    // if(!process.env.VUE_APP_IP_API_KEY)
+    //   this.store.relays.setGeo(geo)
 
     this.lastUpdate = this.store.jobs.getLastUpdate('relays')
     this.preferences = this.store.prefs.get

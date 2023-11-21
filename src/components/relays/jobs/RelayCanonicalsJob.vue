@@ -29,7 +29,7 @@ const localMethods = {
     if( (!this.isExpired(this.slug) && !force) ) 
       return
     
-    const subid = crypto.randomBytes(40).toString('hex')
+    const subid = crypto.randomBytes(20).toString('hex')
 
     this.queueJob(
       this.slug, 
@@ -108,9 +108,7 @@ export default defineComponent({
   },
   beforeMount(){
     this.lastUpdate = this.store.jobs.getLastUpdate(this.slug)
-    this.untilNext = this.timeUntilRefresh()
-    this.sinceLast = this.timeSinceRefresh()
-    
+
     this.relays = Array.from(new Set(relays))
   },
   mounted(){

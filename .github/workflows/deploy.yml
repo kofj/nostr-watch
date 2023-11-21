@@ -2,10 +2,15 @@ name: Build & Deploy
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
+env: 
+  VUE_APP_IP_API_KEY: ${{ vars.VUE_APP_IP_API_KEY }}
+    
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: Production
     steps:
 
       - name: Checkout 
@@ -13,6 +18,9 @@ jobs:
       
       - name: Yarn Install
         run: yarn install
+        
+      - name: ENV_VARS 
+        run: echo "VUE_APP_IP_API_KEY=$VUE_APP_IP_API_KEY" >> .env
 
       - name: Docker Build & tag
         run: |

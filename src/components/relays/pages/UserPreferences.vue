@@ -93,6 +93,27 @@
 
           <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 dark:sm:border-slate-800 sm:pt-5">
             <label for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 sm:mt-px sm:pt-2">
+              Use realtime geo-checking
+            </label>
+            <div class="mt-1 sm:col-span-2 sm:mt-0">
+              <Switch
+                v-model="store.prefs.runtimeGeo"
+                :class="store.prefs.runtimeGeo ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-black'"
+                class="relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+              >
+                <span class="sr-only">Auto-detect Region</span>
+                <span
+                  aria-hidden="true"
+                  :class="store.prefs.runtimeGeo ? 'translate-x-5' : 'translate-x-0'"
+                  class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
+                />
+              </Switch>
+              <p class="mt-2 text-sm text-gray-500">If disabled, geo-checking will use build-time data instead of API. Geo entires are very likely to be missing when this is disabled since this data is only updated periodically. Use this option if you use an ad-blocker or Brave Browser.</p>
+            </div>
+          </div>
+
+          <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 dark:sm:border-slate-800 sm:pt-5">
+            <label for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 sm:mt-px sm:pt-2">
               Auto-detect Region
             </label>
             <div class="mt-1 sm:col-span-2 sm:mt-0">
@@ -114,30 +135,14 @@
 
           <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 dark:sm:border-slate-800 sm:pt-5" v-if="!store.prefs.autoDetectRegion">
             <label for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 sm:mt-px sm:pt-2">
-              Auto-detect Region
+              Select region
             </label>
             <div class="mt-4 space-y-4">
             
-              <div class="flex items-center" v-for="region in ['us-east', 'eu-west', 'asia-south', 'asia-southeast', 'australia']" :key="prefs-`${region}`">
+              <div class="flex items-center" v-for="region in ['us-east', 'eu-west', 'asia-south', 'asia-southeast', 'au']" :key="prefs-`${region}`">
                 <input v-model="store.prefs.region" :value="region" :id="region" name="push-notifications" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                 <label :for="region" class="ml-3 block text-sm font-medium text-gray-700  dark:text-gray-500">{{ region }}</label>
               </div>
-              <!-- <div class="flex items-center">
-                <input v-model="store.prefs.region" value="eu-west" id="push-email" name="push-notifications" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                <label for="push-email" class="ml-3 block text-sm font-medium text-gray-700  dark:text-gray-500">eu-west</label>
-              </div>
-              <div class="flex items-center">
-                <input v-model="store.prefs.region" value="asia-south" id="push-nothing" name="push-notifications" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                <label for="push-nothing" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-500">asia-south</label>
-              </div>
-              <div class="flex items-center">
-                <input v-model="store.prefs.region" value="asia-southeast" id="push-nothing" name="push-notifications" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                <label for="push-nothing" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-500">asia-southeast</label>
-              </div>
-              <div class="flex items-center">
-                <input v-model="store.prefs.region" value="au" id="push-nothing" name="push-notifications" type="radio" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                <label for="push-nothing" class="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-500">australia</label>
-              </div> -->
               <p class="mt-2 text-sm text-gray-500">The region determines where uptime<span v-if="!store.prefs.clientSideProcessing"> and latency</span> data is pulled from</p>
             </div>
           </div>
@@ -164,7 +169,7 @@
             </div>
           </div>
 
-          <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 dark:sm:border-slate-800 sm:pt-5">
+          <!-- <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 dark:sm:border-slate-800 sm:pt-5">
             <label for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 sm:mt-px sm:pt-2">
               Uptime Sorting
             </label>
@@ -183,7 +188,7 @@
               </Switch>
               <p class="mt-2 text-sm text-gray-500">If enabled, uptime values will be used in multi-dimensional sorting</p>
             </div>
-          </div>
+          </div> -->
 
           <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 dark:sm:border-slate-800 sm:pt-5">
             <label for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 sm:mt-px sm:pt-2">
@@ -266,13 +271,96 @@
               <textarea 
                 id="ignoreTopics" 
                 name="ignoreTopics" 
+                :value="store.prefs.ignoreTopics"
+                @change="updateResultTopics"
+                @input="store.prefs.ignoreTopics = $event.target.value.toLowerCase()"
                 rows="3" 
-                class="py-2 px-3 block w-full max-w-lg rounded-md border-gray-800 dark:bg-black/30 dark:text-white/60 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" v-model="store.prefs.ignoreTopics" />
+                class="py-2 px-3 block w-full max-w-lg rounded-md border-gray-800 dark:bg-black/30 dark:text-white/60 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"  />
               <p class="mt-2 text-sm text-gray-500">Comma separated list, defaults are there because they are OP</p>
             </div>
           </div>
 
-          <h2 class="text-2xl pt-8 text-pink-700 dark:text-pink-300 mt-4 font-extrabold">Data</h2>
+          <h2 class="text-2xl pt-8 text-pink-700 dark:text-pink-300 mt-4 font-extrabold">
+            Data
+          </h2>
+
+          <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 dark:sm:border-slate-800 sm:pt-5">
+            <label for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 sm:mt-px sm:pt-2">
+              Advanced timeout?
+            </label>
+            <div class="mt-1 sm:col-span-2 sm:mt-0">
+              <Switch
+                v-model="store.prefs.advancedTimeout"
+                :class="store.prefs.advancedTimeout ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-black'"
+                class="relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75"
+              >
+                <span class="sr-only">Use client-side processing</span>
+                <span
+                  aria-hidden="true"
+                  :class="store.prefs.advancedTimeout ? 'translate-x-5' : 'translate-x-0'"
+                  class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
+                />
+              </Switch>
+              <p class="mt-2 text-sm text-gray-500">If enabled, you can have different timeouts for connection, reading and writing during relay checks.</p>
+            </div>
+          </div>
+
+          <div v-if="!store.prefs.advancedTimeout" class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 dark:sm:border-slate-800 sm:pt-5">
+            <label for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 sm:mt-px sm:pt-2">
+              RelayChecker Timeout
+            </label>
+            <div class="mt-1 sm:col-span-2 sm:mt-0">
+              {{ store.prefs.inspectTimeout }}
+              <input 
+                v-model="store.prefs.inspectTimeout"
+                class="rounded-lg overflow-hidden appearance-none bg-red-500 h-3 w-128" 
+                type="range" min="5000" max="60000" step="1"/>
+              <p class="mt-2 text-sm text-gray-500">What timeout should be used for connection, read and write checks?</p>
+            </div>
+          </div>
+
+          <div v-if="store.prefs.advancedTimeout" class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 dark:sm:border-slate-800 sm:pt-5">
+            <label  for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 sm:mt-px sm:pt-2">
+              Connect Timeout
+            </label>
+            <div class="mt-1 sm:col-span-2 sm:mt-0">
+              {{ store.prefs.connectTimeout }}
+              <input 
+                v-model="store.prefs.connectTimeout"
+                class="rounded-lg overflow-hidden appearance-none bg-red-500 h-3 w-128" 
+                type="range" min="5000" max="60000" step="1"/>
+              <p class="mt-2 text-sm text-gray-500">What timeout should be used for connection checks?</p>
+            </div>
+          </div>
+
+          <div v-if="store.prefs.advancedTimeout" class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 dark:sm:border-slate-800 sm:pt-5">
+            <label for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 sm:mt-px sm:pt-2">
+              Read Timeout
+            </label>
+            <div class="mt-1 sm:col-span-2 sm:mt-0">
+              {{ store.prefs.readTimeout }}
+              <input 
+                v-model="store.prefs.readTimeout"
+                class="rounded-lg overflow-hidden appearance-none bg-red-500 h-3 w-128" 
+                type="range" min="5000" max="60000" step="1"/>
+              <p class="mt-2 text-sm text-gray-500">What timeout should be used for read checks?</p>
+            </div>
+          </div>
+
+          <div v-if="store.prefs.advancedTimeout" class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 dark:sm:border-slate-800 sm:pt-5">
+            <label for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 sm:mt-px sm:pt-2">
+              Write Timeout
+            </label>
+            <div class="mt-1 sm:col-span-2 sm:mt-0">
+              {{ store.prefs.writeTimeout }}
+              <input 
+                v-model="store.prefs.writeTimeout"
+                class="rounded-lg overflow-hidden appearance-none bg-red-500 h-3 w-128" 
+                type="range" min="5000" max="60000" step="1"/>
+              <p class="mt-2 text-sm text-gray-500">What timeout should be used for write checks?</p>
+            </div>
+          </div>
+
           <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:border-t sm:border-gray-200 dark:sm:border-slate-800 sm:pt-5">
             <label for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 sm:mt-px sm:pt-2">
               Check Pubkey (NIP-11)
@@ -312,7 +400,7 @@
                   class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
                 />
               </Switch>
-              <p class="mt-2 text-sm text-gray-500">If enabled, will use nostr.watch API to discover new relays periodically. <span class="text-red-500">This may have undesirable results</span></p>
+              <p class="mt-2 text-sm text-gray-500">If enabled, will use nostr.watch API to discover new relays periodically.</p>
             </div>
           </div>
 
@@ -376,6 +464,7 @@ export default defineComponent({
       autoDetectRegion: this.store.prefs.autoDetectRegion,
       discoverRelays: this.store.prefs.discoverRelays,
       checkNip11: this.store.prefs.checkNip11,
+      runtimeGeo: this.store.prefs.runtimeGeo
     }
   },
 
@@ -394,22 +483,26 @@ export default defineComponent({
   async mounted() {
     this.interval = setInterval(() => {
       if(this.store.prefs.region !== this.currentRegion || this.store.prefs.autoDetectRegion !== this.autoDetectRegion){
-        delete this.store.jobs.getLastUpdate('relays/seed')
-        delete this.store.jobs.getLastUpdate('user/region')
+        delete this.store.jobs.lastUpdate['relays/seed']
+        delete this.store.jobs.lastUpdate['user/region']
         this.currentRegion = this.store.prefs.region
         this.autoDetectRegion = this.store.prefs.autoDetectRegion
         this.$forceUpdate()
       }
       if(this.store.prefs.discoverRelays !== this.discoverRelays){
-        delete this.store.jobs.getLastUpdate('relays/get')
-        delete this.store.jobs.getLastUpdate('relays/seed')
-        delete this.store.jobs.getLastUpdate('relays/check')
+        delete this.store.jobs.lastUpdate['relays/get']
+        delete this.store.jobs.lastUpdate['relays/seed']
+        delete this.store.jobs.lastUpdate['relays/check']
         this.discoverRelays = this.store.prefs.discoverRelays
+        this.$forceUpdate()
+      }
+      if(this.store.prefs.runtimeGeo !== this.runtimeGeo){
+        delete this.store.jobs.lastUpdate['relays/geo']
         this.$forceUpdate()
       }
 
       if(this.store.prefs.checkNip11 !== this.checkNip11){
-        delete this.store.jobs.getLastUpdate('relays/nip11')
+        delete this.store.jobs.lastUpdate['relays/nip11']
         this.checkNip11 = this.store.prefs.checkNip11
         this.$forceUpdate()
       }
@@ -417,7 +510,12 @@ export default defineComponent({
   },
 
   computed: Object.assign(SharedComputed, {
-    
+    updateResultTopics(){
+      Object.keys(this.store.results.data).forEach( relay => {
+        if(this.store.results.data[relay]?.topics)
+          this.store.results.data[relay].topics = this.removeIgnoredTopics(this.store.results.data[relay]?.topics)
+      })
+    }
   }),
 
   methods: Object.assign(RelaysLib, localMethods), 

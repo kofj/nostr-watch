@@ -27,11 +27,11 @@ import { setupStore } from '@/store'
 import RelayMethods from '@/shared/relays-lib.js'
 import SharedComputed from '@/shared/computed.js'
 
-// import { Inspector } from 'nostr-relay-inspector'
+// import { RelayChecker } from 'nostrwatch-js'
 
 const localMethods = {
   CheckNip11(force){ 
-    if( !this.isExpired(this.slug, 24*60*60*1000) && !force )
+    if( !this.isExpired(this.slug, 60*1000) && !force )
       return
     this.queueJob(
       this.slug, 
@@ -40,18 +40,18 @@ const localMethods = {
         this.relays.forEach( relay => {
           if(!this.store.results.get(relay))
             return
-          this.store.results.mergeDeep( { [relay]: this.validatePubkey(relay) } )
+          this.store.results.mergeDeep( { [relay]: this.getResultPubkeyValidation(relay) } )
         })
         this.store.jobs.completeJob(this.slug)
       },
       true
     )
   },
-  validatePubkey(relay){
+  getResultPubkeyValidation(relay){
     const result = this.store.results.get(relay)
 
     if(!result?.info?.pubkey)
-      return 
+      return result
 
     result.pubkeyValid = false
     
@@ -75,14 +75,8 @@ const localMethods = {
     return result
   },
   closeAll(){
-    if(this.inspectors.length)
-      this.inspectors.forEach( $inspector => $inspector.close() ) 
-  },
-  timeUntilRefresh(){
-    return this.timeSince(Date.now()-(this.store.jobs.getLastUpdate(this.slug)+this.store.prefs.duration)) 
-  },
-  timeSinceRefresh(){
-    return this.timeSince(this.store.jobs.getLastUpdate(this.slug)) || Date.now()
+    if(this.relayCheckers.length)
+      this.relayCheckers.forEach( $inspector => $inspector.close() ) 
   },
 }
 
@@ -93,7 +87,7 @@ export default defineComponent({
     return {
       slug: 'relays/nip11', //REMEMBER TO CHANGE!!!\
       relays: [],
-      inspectors: [],
+      relayCheckers: [],
       interval: null,
     }
   },
@@ -111,8 +105,6 @@ export default defineComponent({
     this.relays = this.store.relays.getAll
 
     this.lastUpdate = this.store.jobs.getLastUpdate(this.slug)
-    this.untilNext = this.timeUntilRefresh()
-    this.sinceLast = this.timeSinceRefresh()
   },
   async mounted(){
     if(this.store.jobs.isJobActive(this.slug))

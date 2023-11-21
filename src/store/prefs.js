@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 
 export const usePrefsStore = defineStore('prefs', {
   state: () => ({ 
+    migration: 0,
     firstVisit: true,
     refresh: true,
     duration: 6*60*60*1000,
@@ -16,6 +17,7 @@ export const usePrefsStore = defineStore('prefs', {
     latencySlow: 1000,
     sortUptime: true,
     sortLatency: true, 
+    sortFees: true,
     autoDetectRegion: true,
     region: 'eu-west',
     ignoreTopics: 'canonical,nostr',
@@ -23,7 +25,14 @@ export const usePrefsStore = defineStore('prefs', {
     discoverRelays: true,
     checkNip11: true,
     CheckNip11Frequency: 24*60*60*1000,
-    disableGeoDetection: false
+    disableGeoDetection: false,
+    advancedTimeout: false,
+    inspectTimeout: 15*1000,
+    connectTimeout: 15*1000,
+    writeTimeout: 15*1000,
+    readTimeout: 15*1000,
+    runtimeGeo: true,
+    geoApiAccessible: true
   }),
   getters: {
     get: state => key => state?.[key],
@@ -52,7 +61,6 @@ export const usePrefsStore = defineStore('prefs', {
         return 
       this.filters.push(key)
       this.filterFn.push(fn) 
-      //console.log('functions:', this.filterFn)
     }
   },
   persistedState: {},

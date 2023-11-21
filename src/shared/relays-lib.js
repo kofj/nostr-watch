@@ -2,17 +2,14 @@ import crypto from "crypto"
 import {sort} from 'array-timsort'
 
 export default {
-  cleanTopics(topics){
-    // console.log(topics.map( topic => [ topic[1], topic?.[2] ] ))
+  removeIgnoredTopics(topics){
+    const ignored = this.store.prefs.ignoreTopics.split(',')
     return topics
-      .filter( topic => 
-        !this.store.prefs.ignoreTopics
-          .split(',')
+      .filter( topic =>
+        !ignored
           .map( ignoreTopic => ignoreTopic.trim() )
-          .includes(topic)
+          .includes(topic[0])
       )
-      .map( topic => [ topic[1], topic?.[2] ? new String(topic[2]).valueOf() : "1" ] )
-    
   },
 
   invalidateJob(name, force){
@@ -111,6 +108,8 @@ export default {
     $pool.relays.forEach( $relay => this.closeRelay( $relay ) )
   },
   closeRelay: function( $relay ){
+    if(!$relay.ws?.readyState || !$relay?.ws.OPEN)
+      return 
     if($relay.ws.readyState === $relay.ws.OPEN )
       $relay.close()
   },
@@ -146,6 +145,7 @@ export default {
       unique: unique
     })
   },
+
   getRelays(relays){
     if(!relays)
       relays = this.store.relays.getAll
@@ -191,7 +191,6 @@ export default {
       needles?.forEach( needle => {
         if(!this.store.filters.enabled && !this.store.filters.alwaysEnabled?.[haystack])
           return 
-
         if(haystack === 'nips')
           filtered = this.getRelaysByNip(filtered, parseInt(needle))
 
@@ -225,32 +224,38 @@ export default {
 
     if(this.store.prefs.sortLatency)
       sort(relays, (relay1, relay2) => {
-        let a = this.store.results.all?.[relay1]?.latency?.average || 100000,
-            b = this.store.results.all?.[relay2]?.latency?.average || 100000
+        let a = this.store.results.get(relay1)?.latency?.average || 100000,
+            b = this.store.results.get(relay2)?.latency?.average || 100000
         return a-b
       })
     sort(relays, (relay1, relay2) => {
-      let x = this.store.results.all?.[relay1]?.check?.connect || false,
-          y = this.store.results.all?.[relay2]?.check?.connect || false
+      let x = this.store.results.get(relay1)?.check?.connect || false,
+          y = this.store.results.get(relay2)?.check?.connect || false
       return (x === y)? 0 : x? -1 : 1;
     })
     if(this.store.prefs.sortLatency)
       sort(relays, (relay1, relay2) => {
-        let a = this.store.results.all?.[relay1]?.latency?.average || null,
-            b = this.store.results.all?.[relay2]?.latency?.average || null
+        let a = this.store.results.get(relay1)?.latency?.average || null,
+            b = this.store.results.get(relay2)?.latency?.average || null
         return (b != null) - (a != null) || a - b;
       })
-    if(this.store.prefs.sortUptime)
-      sort(relays, (relay1, relay2) => {
-        let a = this.store.results.all?.[relay1]?.uptime || 0,
-            b = this.store.results.all?.[relay2]?.uptime || 0
-        return b-a
-      })
+    // if(this.store.prefs.sortUptime && this.store.layout.getActive('relays/find') !== 'paid')
+    //   sort(relays, (relay1, relay2) => {
+    //     let a = this.store.results.all?.[relay1]?.uptime || 0,
+    //         b = this.store.results.all?.[relay2]?.uptime || 0
+    //     return b-a
+    //   })
     if(this.store.prefs.doPinFavorites)
       sort(relays, (relay1, relay2) => {
         let x = this.store.relays.isFavorite(relay1) || false,
             y = this.store.relays.isFavorite(relay2) || false
         return (x === y)? 0 : x? -1 : 1;
+      })
+    if(this.store.prefs.sortFees && this.store.layout.getActive('relays/find') === 'paid')
+      sort(relays, (relay1, relay2) => {
+        let x = this.store.results.get(relay1)?.info?.fees?.admission?.[0]?.amount || 1000000000000,
+            y = this.store.results.get(relay2)?.info?.fees?.admission?.[0]?.amount || 1000000000000
+        return x-y
       })
     // relays = this.sortRelaysFavoritesOnTop(relays)
     return Array.from(new Set(relays))
@@ -271,13 +276,29 @@ export default {
       return this.$storage.removeStorageSync(key)
     },
 
+    async storageClearAll(tries){
+      if(!tries)
+        tries = 0
+      Object.keys(this.store).forEach( store => this.store[store].$reset )
+      localStorage.clear()
+      if(tries < 3)
+        this.storageClearAll(tries++)
+      else 
+        await new Promise( resolve => 
+          setTimeout( () => {
+            this.$forceUpdate
+            resolve()
+          }, 100) 
+        )
+    },
+
     getAggregate: function(result) {
+
+      if(!result?.latency?.connect)
+        return 'offline'
 
       if(result?.check.connect && result?.check.read && result?.check.write)
         return 'public'
-
-      if(!result?.check.connect && !result?.check.read && !result?.check.write)
-        return 'offline'
 
       // else if(this.isPayToRelay(result.url))
       //   return 'restricted'
@@ -297,9 +318,9 @@ export default {
       return Object.entries(this.store.relays.results).length
     },
 
-    relaysComplete: function() {
-      return this.relays?.filter(relay => this.store.relays.results?.[relay]?.state == 'complete').length
-    },
+    // relaysComplete: function() {
+    //   return this.relays?.filter(relay => this.store.relays.results?.[relay]?.state == 'complete').length
+    // },
 
     sha1: function(message) {
       const hash = crypto.createHash('sha1').update(JSON.stringify(message)).digest('hex')
@@ -313,6 +334,28 @@ export default {
     loadingComplete: function(){
       return this.isDone() ? 'loaded' : ''
     },
+    
+
+    // getReadabilityPercentage(relay){
+    //   const pulses = this.store.stats.getPulse(relay)
+    //   if(!pulses || !Object.keys(pulses).length )
+    //     return
+    //   const totalPulses = Object.keys(pulses).length 
+    //   const totalOnline = Object.entries(pulses).reduce(
+    //       (acc, value) => value[1].latency ? acc+1 : acc,
+    //       0
+    //   );
+    //   return Math.floor((totalOnline/totalPulses)*100)
+    // },
+
+    // getUptimePercentage(relay){
+    //   const pulses = this.store.stats.getPulse(relay)
+    //   console.log(relay, pulses)
+    //   if(!pulses || !Object.keys(pulses).length )
+    //     return
+    //   const totalPulses = Object.keys(pulses).length 
+    //   return Math.floor((totalPulses/48)*100)
+    // },
 
     getUptimePercentage(relay){
       const pulses = this.store.stats.getPulse(relay)
@@ -327,36 +370,16 @@ export default {
     },
 
     setUptimePercentage(relay){
-      const perc = this.getUptimePercentage(relay)
-      const result = {}
-      result.uptime = perc 
-      this.store.results.mergeRight( { [relay]: result  } )
-      return result
-    },
+      const result = { ability: {} };
 
-    timeSince: function(date) {
-      let seconds = Math.floor((new Date() - date) / 1000);
-      let interval = seconds / 31536000;
-      if (interval > 1) {
-        return Math.floor(interval) + " years";
-      }
-      interval = seconds / 2592000;
-      if (interval > 1) {
-        return Math.floor(interval) + " months";
-      }
-      interval = seconds / 86400;
-      if (interval > 1) {
-        return Math.floor(interval) + " days";
-      }
-      interval = seconds / 3600;
-      if (interval > 1) {
-        return Math.floor(interval) + " hours";
-      }
-      interval = seconds / 60;
-      if (interval > 1) {
-        return Math.floor(interval) + " minutes";
-      }
-      return Math.floor(seconds) + " seconds";
+      ['connect','read','write'].forEach(ability => {
+
+        result.ability[ability] = this.getAbilityRate(ability, relay)
+      })
+
+      this.store.results.mergeDeep( { [relay]: result  } )
+
+      return result
     },
 
     delay(ms) {

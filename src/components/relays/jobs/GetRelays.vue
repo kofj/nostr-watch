@@ -11,7 +11,7 @@
 </style>
 
 <script>
-import { defineComponent, toRefs } from 'vue'
+import { defineComponent } from 'vue'
 
 import { setupStore } from '@/store'
 
@@ -27,7 +27,9 @@ const localMethods = {
     this.queueJob(
       this.slug, 
       () => {
+        console.log('discover relays?', this.store.prefs.discoverRelays, !this.store.prefs.discoverRelays)
         if(!this.store.prefs.discoverRelays) {
+          console.log('using relays.yaml', relays)
           this.finish(relays)
         } 
         else {
@@ -64,31 +66,18 @@ const localMethods = {
     )
   },
   finish(_relays, clear){
-    
+    console.log('relays!', _relays)
     const newRelays = this.store.relays.addRelays(_relays)
 
     if(newRelays.length)
       newRelays.forEach( relay => {
         console.log('new relay!', relay)
-        // this.queueJob(
-        //   slug, 
-        //   async () => await this.checkSingle(result.url, slug), 
-        //   true
-        // )
       })
-
-    this.relays = this.store.relays.getAll
 
     if(clear)
       clearTimeout(this.timeout)
     
     this.store.jobs.completeJob(this.slug)
-  },
-  timeUntilRefresh(){
-    return this.timeSince(Date.now()-(this.store.jobs.getLastUpdate(this.slug)+this.store.prefs.duration-Date.now())) 
-  },
-  timeSinceRefresh(){
-    return this.timeSince(this.store.jobs.getLastUpdate(this.slug)) || Date.now()
   },
 }
 
@@ -101,11 +90,9 @@ export default defineComponent({
       timeout: null
     }
   },
-  setup(props){
-    const {relaysProp: relays} = toRefs(props)
+  setup(){
     return { 
       store : setupStore(),
-      relays: relays
     }
   },
   created(){
@@ -116,8 +103,6 @@ export default defineComponent({
   },
   beforeMount(){
     this.lastUpdate = this.store.jobs.getLastUpdate(this.slug)
-    this.untilNext = this.timeUntilRefresh()
-    this.sinceLast = this.timeSinceRefresh()
   },
   mounted(){
     if(this.store.jobs.isJobActive(this.slug))

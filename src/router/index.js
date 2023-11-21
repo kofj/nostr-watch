@@ -2,7 +2,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import RelaysFind from '@/components/relays/pages/RelaysFind.vue'
-import RelaysSingle from '@/components/relays/pages/RelaysSingle.vue'
+import RelaysDetail from '@/components/relays/pages/RelaysDetail.vue'
 // import RelaysMap from '@/components/relays/pages/RelaysMap.vue'
 import RelaysStatistics from '@/components/relays/pages/RelaysStatistics.vue'
 import UserPreferences from '@/components/relays/pages/UserPreferences.vue'
@@ -20,7 +20,7 @@ const routes = [
         name: 'relaysAdd',
         path: '/relays/add',
         beforeEnter() {
-            window.location.href = 'https://github.com/dskvr/nostr-watch/edit/main/relays.yaml'
+            window.location.href = 'https://github.com/sandwichfarm/nostr-watch/wiki/How-to-add-a-Relay-to-nostrwatch'
         },
         component: RedirectComponent
     },
@@ -65,11 +65,11 @@ const routes = [
     },
     {
         path: '/relay/:protocol(ws?s)/:relayUrl(.*)',
-        component: RelaysSingle
+        component: RelaysDetail
     },
     {
         path: '/relay/:relayUrl(.*)',
-        component: RelaysSingle
+        component: RelaysDetail
     },
     {
         path: '/',

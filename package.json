@@ -1,12 +1,12 @@
 {
   "name": "nostr-watch",
-  "version": "0.2.0",
+  "version": "0.2.13",
   "private": true,
   "scripts": {
     "build": "vue-cli-service build",
     "build:quick": "vue-cli-service build",
-    "prebuild": "yarn get:relays && yarn get:geo",
-    "get:relays": "node ./scripts/relays.js",
+    "prebuild": "yarn get:geo && yarn prebuild:move",
+    "prebuild:move": "yarn yaml-convert relays.yaml -o public/relays.json",
     "get:geo": "node ./scripts/geo.js",
     "serve": "vue-cli-service serve --host localhost",
     "lint": "vue-cli-service lint",
@@ -38,8 +38,8 @@
     "node-emoji": "1.11.0",
     "node-fetch": "3.3.0",
     "nostr": "0.2.5",
-    "nostr-relay-inspector": "0.0.32",
     "nostr-tools": "1.1.1",
+    "nostrwatch-js": "0.0.48",
     "object-hash": "3.0.0",
     "object-sizeof": "1.6.3",
     "onion-regex": "2.0.8",
@@ -54,6 +54,7 @@
     "unescape-json": "1.0.3",
     "url-status-code": "2.0.0",
     "vue": "^3.2.45",
+    "vue-country-flag-next": "2.3.2",
     "vue-gauge": "1.0.3",
     "vue-grid-responsive": "1.3.0",
     "vue-meta": "3.0.0-alpha.8",
@@ -61,7 +62,7 @@
     "vue-tailwind": "2.5.1",
     "vue-use": "0.2.0",
     "vue3-storage": "0.1.11",
-    "webpack": "5.75.0",
+    "webpack": "5.76.0",
     "write-yaml-file": "4.2.0"
   },
   "devDependencies": {
@@ -85,7 +86,7 @@
     "mini-css-extract-plugin": "2.7.2",
     "node-polyfill-webpack-plugin": "2.0.1",
     "node-sass": "8.0.0",
-    "postcss": "8.4.20",
+    "postcss": "8.4.31",
     "postcss-loader": "7.0.2",
     "postcss-preset-env": "7.8.3",
     "sass": "1.56.1",
@@ -95,6 +96,7 @@
     "vue-cli-plugin-yaml-loader": "~1.0.0",
     "vue-template-compiler": "2.7.14",
     "webpack-cli": "5.0.0",
+    "yaml-convert": "1.0.1",
     "yaml-loader": "^0.6.0"
   },
   "eslintConfig": {
